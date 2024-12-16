@@ -1,0 +1,205 @@
+//file with the code for the popup + scoring , plus some extra warnings
+//it is not at all perfect , but yeah easier to patch things up from here
+import { Devvit, useState, useForm } from '@devvit/public-api';
+
+const resolution = 3;
+const height = 70;
+const width = 70;
+const blankCanvas = new Array(resolution * resolution).fill(0);
+const gridSize = `${resolution * width}px`;
+
+Devvit.configure({
+  redditAPI: true,
+});
+
+Devvit.addCustomPostType({
+  name: 'Name',
+  render: (context) => {
+    const [data, setData] = useState(blankCanvas);
+    const [spritePosition, setSpritePosition] = useState({ x: 0, y: 0 });
+    const [score, setScore] = useState(0);
+    const [isQuestionMode, setQuestionMode] = useState(false);
+    const [currentQuestion, setCurrentQuestion] = useState<null | { question: string; answer: string }>(null);
+
+    // Question bank
+    const questions = [
+      { question: "What is 2 + 2?", answer: "4" },
+      { question: "What is the capital of France?", answer: "Paris" },
+      { question: "What color is the sky on a clear day?", answer: "Blue" },
+    ];
+
+    // Initialize the form for answering questions
+    const questionForm = useForm(
+      {
+        fields: [
+          {
+            type: 'string',
+            name: 'answer',
+            label: currentQuestion ? currentQuestion.question : "Question",
+          },
+        ],
+      },
+      (values) => {
+        const userAnswer = values.answer ?? ""; // Safely handle undefined
+
+        if (currentQuestion && userAnswer.toLowerCase() === currentQuestion.answer.toLowerCase()) {
+          setQuestionMode(false); // Exit question mode
+          context.ui.showToast("Correct! You can now move."); // Only pass the text message
+        } else {
+          context.ui.showToast("Incorrect! Try again."); // Only pass the text message
+        }
+      }
+    );
+
+    const pixels = data.map((pixel, index) => {
+      const row = Math.floor(index / resolution);
+      const col = index % resolution;
+      const isSprite = row === spritePosition.y && col === spritePosition.x;
+
+      // Set cell colors and scoring
+      let backgroundColor = 'white';
+      if (row === 2 && col === 2) {
+        backgroundColor = '#FF2400'; // Red
+        if (isSprite) setScore((prev) => prev + 4);
+      } else if (
+        (row === 2 && (col === 0 || col === 1)) ||
+        (col === 2 && (row === 0 || row === 1))
+      ) {
+        backgroundColor = '#1773FE'; // Blue
+        if (isSprite) setScore((prev) => prev + 3);
+      } else if (
+        (row === 1 && col === 0) ||
+        (row === 1 && col === 1) ||
+        (row === 0 && col === 1)
+      ) {
+        backgroundColor = 'yellow'; // Yellow
+        if (isSprite) setScore((prev) => prev + 2);
+      } else if (row === 0 && col === 0) {
+        backgroundColor = 'green'; // Green
+        if (isSprite) setScore((prev) => prev + 1);
+      }
+
+      return (
+        <hstack
+          height={`${height}px`}
+          width={`${width}px`}
+          backgroundColor={backgroundColor}
+          border="thin"
+          borderColor="darkgrey"
+        >
+          {isSprite && (
+            <image
+              url="bomb2.png"
+              height="100%"
+              width="100%"
+              imageWidth={100}
+              imageHeight={100}
+              resizeMode="fit"
+              description="Sprite"
+            />
+          )}
+        </hstack>
+      );
+    });
+
+    const moveSprite = (direction: 'Up' | 'Down' | 'Left' | 'Right') => {
+      if (isQuestionMode) {
+        context.ui.showToast({ text: "Answer the question first!", type: "warning" });
+        return;
+      }
+
+      setSpritePosition((prev) => {
+        let { x, y } = prev;
+
+        switch (direction) {
+          case 'Up':
+            y = Math.max(0, y - 1);
+            break;
+          case 'Down':
+            y = Math.min(resolution - 1, y + 1);
+            break;
+          case 'Left':
+            x = Math.max(0, x - 1);
+            break;
+          case 'Right':
+            x = Math.min(resolution - 1, x + 1);
+            break;
+        }
+
+        // Show a question when trying to move
+        const randomQuestion = questions[Math.floor(Math.random() * questions.length)];
+        setCurrentQuestion(randomQuestion);
+        setQuestionMode(true);
+        context.ui.showForm(questionForm); // Display the form for the question
+
+        return { x, y };
+      });
+    };
+
+    function splitArray<T>(array: T[], segmentLength: number): T[][] {
+      const result: T[][] = [];
+      for (let i = 0; i < array.length; i += segmentLength) {
+        result.push(array.slice(i, i + segmentLength));
+      }
+      return result;
+    }
+
+    return (
+      <vstack gap="medium" height="100%" alignment="middle center">
+        <vstack
+          cornerRadius="none"
+          border="thin"
+          height={gridSize}
+          width={gridSize}
+        >
+          {splitArray(pixels, resolution).map((row) => (
+            <hstack>{row}</hstack>
+          ))}
+        </vstack>
+        <vstack gap="small" alignment="bottom start">
+          <hstack gap="small">
+            <button
+              icon="up-arrow-fill"
+              width="70px"
+              grow
+              onPress={() => moveSprite('Up')}
+            >
+              Up
+            </button>
+            <button
+              icon="back-fill"
+              width="78px"
+              grow
+              onPress={() => moveSprite('Left')}
+            >
+              Left
+            </button>
+            <vstack alignment="middle center" padding="small">
+              <text size="large">Score: {score}</text>
+            </vstack>
+          </hstack>
+          <hstack gap="small">
+            <button
+              icon="down-arrow-fill"
+              width="75px"
+              grow
+              onPress={() => moveSprite('Down')}
+            >
+              Down
+            </button>
+            <button
+              icon="forward-fill"
+              width="75px"
+              grow
+              onPress={() => moveSprite('Right')}
+            >
+              Right
+            </button>
+          </hstack>
+        </vstack>
+      </vstack>
+    );
+  },
+});
+
+export default Devvit;
