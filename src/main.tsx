@@ -102,9 +102,7 @@ const moveSprite = (direction : 'Up' | 'Down' | 'Left' | 'Right') => {
     return result;
   }
 
-    
-  return (
-      <blocks>
+const Canvas = () => (
       <vstack gap="small" width="100%" height="100%" alignment="center middle">
           <vstack
             cornerRadius="none"
@@ -114,8 +112,7 @@ const moveSprite = (direction : 'Up' | 'Down' | 'Left' | 'Right') => {
           >
               {splitArray(pixels, resolution).map((row) => (
                 <hstack  >{row}</hstack>
-              ))}
-            
+              ))}  
           </vstack>
         <vstack gap="small" alignment="bottom start">
             <hstack gap="small" >
@@ -129,6 +126,12 @@ const moveSprite = (direction : 'Up' | 'Down' | 'Left' | 'Right') => {
             </hstack>
         </vstack>
       </vstack>
+  
+)
+    
+  return (
+      <blocks>
+        <Canvas />
       </blocks>
     )
   }
