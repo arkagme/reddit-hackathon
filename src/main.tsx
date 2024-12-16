@@ -1,10 +1,11 @@
 import {Devvit , useState} from '@devvit/public-api'
 
-const resolution = 6;
-const height = 40;
-const width = 40;
+const resolution = 3;
+const height = 70;
+const width = 70;
 const blankCanvas = new Array(resolution * resolution).fill(0);
 const gridSize = `${resolution * width}px`
+
 
 
 Devvit.addCustomPostType({
@@ -44,13 +45,30 @@ const pixels = data.map((pixel, index) => {
       const row = Math.floor(index / resolution);
       const col = index % resolution;
       const isSprite = row === spritePosition.y && col === spritePosition.x;
+    let backgroundColor = 'white';
+        if (row === 2 && col === 2) {
+          backgroundColor = '#FF2400'; 
+        } else if (
+          (row === 2 && (col === 0 || col === 1)) || 
+          (col === 2 && (row === 0 || row === 1))   
+        ) {
+          backgroundColor = '#1773FE';
+        } else if (
+          (row === 1 && col === 0) ||               
+          (row === 1 && col === 1) ||                
+          (row === 0 && col === 1)                   
+        ) {
+          backgroundColor = 'yellow';
+        } else if (row === 0 && col === 0) {
+          backgroundColor = 'green';
+        }
     return(
       <hstack
         height={`${height}px`}
         width={`${width}px`}
-        backgroundColor={isSprite ? 'transparent' : "white"}
+        backgroundColor={backgroundColor}
         border="thin"
-        borderColor="grey"
+        borderColor="darkgrey"
       >
         {isSprite && (
             <image
@@ -83,21 +101,27 @@ const pixels = data.map((pixel, index) => {
       <blocks>
       <vstack gap="small" width="100%" height="100%" alignment="center middle">
           <vstack
-            cornerRadius="small"
+            cornerRadius="none"
             border="thin"
             height={gridSize}
             width={gridSize}
           >
-            {splitArray(pixels, resolution).map((row) => (
-              <hstack  >{row}</hstack>
-            ))}
+              {splitArray(pixels, resolution).map((row) => (
+                <hstack  >{row}</hstack>
+              ))}
+            
           </vstack>
-        <hstack gap="small">
-        <button onPress={() => moveSprite('Up')}>Up</button>
-        <button onPress={() => moveSprite('Down')}>Down</button>
-        <button onPress={() => moveSprite('Left')}>Left</button>
-        <button onPress={() => moveSprite('Right')}>Right</button>
-        </hstack>
+        <vstack gap="small" alignment="bottom start">
+            <hstack gap="small" >
+              <button onPress={() => moveSprite('Up')}>Up</button>
+              <button onPress={() => moveSprite('Down')}>Down</button>
+               <vstack alignment="middle center" padding="small"><text> Score : </text></vstack>
+             </hstack>
+            <hstack gap="small">
+              <button onPress={() => moveSprite('Left')}>Left</button>
+              <button onPress={() => moveSprite('Right')}>Right</button>
+            </hstack>
+        </vstack>
       </vstack>
       </blocks>
     )
