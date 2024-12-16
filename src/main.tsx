@@ -6,7 +6,9 @@ const width = 70;
 const blankCanvas = new Array(resolution * resolution).fill(0);
 const gridSize = `${resolution * width}px`
 
-
+Devvit.configure({
+  redditAPI: true,
+});
 
 Devvit.addCustomPostType({
   name: 'Name',
@@ -14,32 +16,8 @@ Devvit.addCustomPostType({
     const { useState } = context;
     const [data, setData] = useState(blankCanvas);
     const [spritePosition, setSpritePosition] = useState({ x: 0, y: 0 });
+    let [score, setCounter] = useState(0)
 
-
-
-const moveSprite = (direction : 'Up' | 'Down' | 'Left' | 'Right') => {
-      setSpritePosition((prev) => {
-        let { x, y } = prev;
-
-        switch (direction) {
-          case 'Up':
-            y = Math.max(0, y - 1);
-            break;
-          case 'Down':
-            y = Math.min(resolution - 1, y + 1);
-            break;
-          case 'Left':
-            x = Math.max(0, x - 1);
-            break;
-          case 'Right':
-            x = Math.min(resolution - 1, x + 1);
-            break;
-        }
-        return { x, y };
-      });
-    };
-
-    
 
 const pixels = data.map((pixel, index) => {
       const row = Math.floor(index / resolution);
@@ -48,20 +26,26 @@ const pixels = data.map((pixel, index) => {
     let backgroundColor = 'white';
         if (row === 2 && col === 2) {
           backgroundColor = '#FF2400'; 
+          if( isSprite){setCounter((score) => score + 4)}
         } else if (
           (row === 2 && (col === 0 || col === 1)) || 
           (col === 2 && (row === 0 || row === 1))   
         ) {
           backgroundColor = '#1773FE';
+          if( isSprite){setCounter((score) => score + 3)}
         } else if (
           (row === 1 && col === 0) ||               
           (row === 1 && col === 1) ||                
           (row === 0 && col === 1)                   
         ) {
           backgroundColor = 'yellow';
+          if( isSprite){setCounter((score) => score + 2)}
         } else if (row === 0 && col === 0) {
           backgroundColor = 'green';
+          if( isSprite){setCounter((score) => score + 1)}
         }
+
+
     return(
       <hstack
         height={`${height}px`}
@@ -84,6 +68,28 @@ const pixels = data.map((pixel, index) => {
         </hstack>
     );
 });
+
+const moveSprite = (direction : 'Up' | 'Down' | 'Left' | 'Right') => {
+      setSpritePosition((prev) => {
+        let { x, y } = prev;
+
+        switch (direction) {
+          case 'Up':
+            y = Math.max(0, y - 1);
+            break;
+          case 'Down':
+            y = Math.min(resolution - 1, y + 1);
+            break;
+          case 'Left':
+            x = Math.max(0, x - 1);
+            break;
+          case 'Right':
+            x = Math.min(resolution - 1, x + 1);
+            break;
+        }
+        return { x, y };
+      });
+    };
 
 
 
@@ -113,13 +119,13 @@ const pixels = data.map((pixel, index) => {
           </vstack>
         <vstack gap="small" alignment="bottom start">
             <hstack gap="small" >
-              <button onPress={() => moveSprite('Up')}>Up</button>
-              <button onPress={() => moveSprite('Down')}>Down</button>
-               <vstack alignment="middle center" padding="small"><text> Score : </text></vstack>
+              <button icon="up-arrow-fill" width="70px" grow onPress={() => moveSprite('Up')}>Up</button>
+              <button icon="back-fill" width="78px" grow onPress={() => moveSprite('Left')}>Left</button>
+               <vstack alignment="middle center" padding="small"><text size="large"> Score : {score} </text></vstack>
              </hstack>
             <hstack gap="small">
-              <button onPress={() => moveSprite('Left')}>Left</button>
-              <button onPress={() => moveSprite('Right')}>Right</button>
+              <button icon="down-arrow-fill" width="75px" grow onPress={() => moveSprite('Down')}>Down</button>
+              <button icon="forward-fill" width="75px" grow onPress={() => moveSprite('Right')}>Right</button>
             </hstack>
         </vstack>
       </vstack>
