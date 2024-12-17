@@ -211,18 +211,15 @@ const usernameForm = useForm(
 
         setRandomQuestion(getRandomQuestion()); 
         setRAnswer(randomQuestion.answer);
-        context.ui.showToast(randomQuestion.question)// Update question after each move
     context.ui.showForm(questionForm);  
 
 
-        // Check if reached the red square (2,2)
         if (x === 2 && y === 2) {
           context.ui.showToast("Yay!! You have reached the final cube!!");
           context.ui.showForm(usernameForm);
         } else {
           setRandomQuestion(getRandomQuestion()); 
           setRAnswer(randomQuestion.answer);
-          context.ui.showToast(randomQuestion.question);
           context.ui.showForm(questionForm);
         }
         
@@ -274,7 +271,21 @@ const usernameForm = useForm(
     };
 
     const Canvas = () => (
-      <vstack gap="small" width="100%" height="100%" alignment="center middle">
+      <vstack gap="small" width="100%" height="100%" alignment="center middle" backgroundColor="#232054">
+        <hstack alignment="top start" gap="medium" width="40%"> 
+          <button
+              size="small"
+              appearance="bordered"
+              onPress={() => {
+                setCurrentScreen("Home");
+                resetGame();
+              }}
+            >
+              Home
+            </button>
+          <text size="large" color="#d9c3a0" alignment="end top">Score: {score}</text>
+        </hstack>
+        
         <vstack
           cornerRadius="none"
           border="thin"
@@ -285,71 +296,64 @@ const usernameForm = useForm(
             <hstack>{row}</hstack>
           ))}
         </vstack>
-        <vstack gap="small" alignment="bottom start">
+        <vstack gap="small" alignment="middle center">
           <hstack gap="small">
             <button
-              icon="up-arrow-fill"
-              width="70px"
-              grow
-              onPress={() => moveSprite("Up")}
-            >
-              Up
+          size="small"
+          appearance="bordered"
+          icon="up-arrow-fill"
+          width="70px"
+          grow
+          onPress={() => moveSprite("Up")}>Up
             </button>
-            <button
-              icon="back-fill"
-              width="78px"
-              grow
-              onPress={() => moveSprite("Left")}
-            >
-              Left
-            </button>
-            <vstack alignment="middle center" padding="small">
-              <text size="large">Score: {score}</text>
-            </vstack>
           </hstack>
           <hstack gap="small">
             <button
-              icon="down-arrow-fill"
-              width="75px"
-              grow
-              onPress={() => moveSprite("Down")}
-            >
-              Down
+          size="small"
+          appearance="bordered"
+          icon="back-fill"
+          width="70px"
+          grow
+          onPress={() => moveSprite("Left")}>Left
             </button>
+             <button
+          size="small"
+          appearance="bordered"
+          icon="down-arrow-fill"
+          width="70px"
+          grow
+          onPress={() => moveSprite("Down")}>Down
+            </button>
+            
             <button
-              icon="forward-fill"
-              width="75px"
-              grow
-              onPress={() => moveSprite("Right")}
-            >
-              Right
+          size="small"
+          appearance="bordered"
+          icon="forward-fill"
+          width="70px"
+          grow
+          onPress={() => moveSprite("Right")}>Right
             </button>
-            <button
-              appearance="bordered"
-              onPress={() => {
-                setCurrentScreen("Home");
-                resetGame();
-              }}
-            >
-              Home
-            </button>
+            
           </hstack>
         </vstack>
       </vstack>
     );
     const InstructionsScreen = () => (
-  <vstack alignment="center middle" gap="medium" height="100%">
-    <text size="medium" color="#d9c3a0">Welcome to Escape Grid!</text>
+  <vstack alignment="center middle" gap="medium" height="100%" backgroundColor="#232054">
+    <PixelText size={1.7} color="#d9c3a0">
+          WELCOME TO ESCAPE GRID
+        </PixelText>
     <text size="small" color="#ffffff">
        Move the sprite using the directional buttons.</text>
       <text size="small" color="#ffffff">Answer questions correctly to proceed.</text>
       <text size="small" color="#ffffff">Reach the goal (red cell) to win the game.
     </text>
     <button
-      appearance="primary"
-      onPress={() => setCurrentScreen("Home")}
-      minWidth="35%"
-    >
+          size="small"
+          appearance="bordered"
+          onPress={() => setCurrentScreen("Home")}
+          minWidth="35%"
+        >
       Back to Home
     </button>
   </vstack>
