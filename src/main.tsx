@@ -1,4 +1,4 @@
-import { Devvit, useState } from "@devvit/public-api";
+import { Devvit, useState, useForm } from "@devvit/public-api";
 
 const resolution = 3;
 const height = 70;
@@ -18,6 +18,64 @@ Devvit.addCustomPostType({
     const [data, setData] = useState(blankCanvas);
     const [spritePosition, setSpritePosition] = useState({ x: 0, y: 0 });
     const [score, setScore] = useState(0);
+    const [isQuestionMode, setQuestionMode] = useState(false);
+    const [currentQuestion, setCurrentQuestion] = useState<null | { question: string; answer: string; options: string[] }>(null);
+
+    const RedQuestions = [
+      { question: "What is 2 + 2?", answer: "4", options: ['2', '4', '6', '8'] },
+      { question: "What is the capital of France?", answer: "Paris", options: ['Paris', '4', '6', '8'] },
+      { question: "What color is the sky on a clear day?", answer: "Blue", options: ['2', '4', 'Blue', '8']},
+    ];
+
+    const BlueQuestions = [
+      { question: "What is 2 + 2?1", answer: "4", options: ['2', '4', '6', '8'] },
+      { question: "What is the capital of France1?", answer: "Paris", options: ['Paris', '4', '6', '8'] },
+      { question: "What color is the sky on a clear day1?", answer: "Blue", options: ['2', '4', 'Blue', '8']},
+    ];
+
+    const GreenQuestions = [
+      { question: "What is 2 + 2?2", answer: "4", options: ['2', '4', '6', '8'] },
+      { question: "What is the capital of France2?", answer: "Paris", options: ['Paris', '4', '6', '8'] },
+      { question: "What color is the sky on a clear day2?", answer: "Blue", options: ['2', '4', 'Blue', '8']},
+    ];
+
+    const YellowQuestions = [
+      { question: "What is 2 + 2?3", answer: "4", options: ['2', '4', '6', '8'] },
+      { question: "What is the capital of France?3", answer: "Paris", options: ['Paris', '4', '6', '8'] },
+      { question: "What color is the sky on a clear day?3", answer: "Blue", options: ['2', '4', 'Blue', '8']},
+    ];
+
+    const questionForm = useForm(
+  {
+    fields: [
+      {
+        type: 'select',
+        name: 'answer',
+        label: currentQuestion ? currentQuestion.question : "Question",
+       options: currentQuestion 
+          ? currentQuestion.options.map((option) => ({
+              label: option,
+              value: option,
+          }))
+          : [],
+      },
+    ],
+  },
+  (values) => {
+    const userAnswer = Array.isArray(values.answer) ? values.answer[0] : values.answer ?? "";
+
+    console.log(userAnswer);
+
+    if (currentQuestion && userAnswer === currentQuestion.answer) {
+      setQuestionMode(false);
+      context.ui.showToast("Correct! You can now move.");
+    } else {
+      context.ui.showToast("Incorrect! Try again.");
+    }
+  }
+);
+
+
 
     const moveSprite = (direction: "Up" | "Down" | "Left" | "Right") => {
       setSpritePosition((prev) => {
@@ -37,9 +95,60 @@ Devvit.addCustomPostType({
             x = Math.min(resolution - 1, x + 1);
             break;
         }
+
+        const backgroundColor = getTileBackgroundColor(x, y);
+        setQuestionBasedOnColor(backgroundColor);
         return { x, y };
       });
     };
+
+    const updateTileColor = (x: number, y: number, color: string) => {
+  const index = y * resolution + x;
+  data[index].backgroundColor = color;
+};
+    const getTileBackgroundColor = (x: number, y: number) => {
+  let backgroundColor = "white";
+  if (x === 2 && y === 2) {
+    backgroundColor = "#FF2400"; 
+  } else if ((x === 2 && (y === 0 || y === 1)) || (y === 2 && (x === 0 || x === 1))) {
+    backgroundColor = "#1773FE";
+  } else if ((x === 1 && y === 0) || (x === 1 && y === 1) || (x === 0 && y === 1)) {
+    backgroundColor = "yellow"; 
+  } else if (x === 0 && y === 0) {
+    backgroundColor = "green"; 
+  }
+  return backgroundColor;
+};
+
+    const setQuestionBasedOnColor = (color: string) => {
+  let selectedQuestion = null;
+      context.ui.showToast(color);
+  switch (color) {
+    case "#FF2400":
+      // Red Question
+      selectedQuestion = RedQuestions[Math.floor(Math.random() * RedQuestions.length)];
+      break;
+    case "#1773FE":
+      // Blue Question
+      selectedQuestion = BlueQuestions[Math.floor(Math.random() * BlueQuestions.length)];
+      break;
+    case "yellow":
+      // Yellow Question
+      selectedQuestion = YellowQuestions[Math.floor(Math.random() * YellowQuestions.length)];
+      break;
+    case "green":
+      // Green Question
+      selectedQuestion = GreenQuestions[Math.floor(Math.random() * GreenQuestions.length)];
+      break;
+  }
+
+  if (selectedQuestion) {
+    setCurrentQuestion(selectedQuestion); // Set the selected question
+    setQuestionMode(true); // Activate question mode
+    context.ui.showForm(questionForm); // Show the form to answer the question
+  }
+};
+
 
     const pixels = data.map((pixel, index) => {
       const row = Math.floor(index / resolution);
@@ -67,6 +176,7 @@ Devvit.addCustomPostType({
         backgroundColor = "green";
         if (isSprite) setScore((score) => score + 1);
       }
+
 
       return (
         <hstack
@@ -100,7 +210,12 @@ Devvit.addCustomPostType({
       return result;
     };
 
+    
+
+    
+
     const Canvas = () => (
+      
       <vstack gap="small" width="100%" height="100%" alignment="center middle">
         <vstack cornerRadius="none" border="thin" height={gridSize} width={gridSize}>
           {splitArray(pixels, resolution).map((row) => (
@@ -133,9 +248,9 @@ Devvit.addCustomPostType({
 
     const HomeScreen = () => (
       <vstack gap="medium" alignment="center middle" width="100%" height="100%" backgroundColor="#232054">
-        <PixelText size={3} color="#d9c3a0">Escape Grid</PixelText>
+        <PixelText size={3} color="#d9c3a0">ESCAPE GRID</PixelText>
         <spacer></spacer>
-        <button size="small" appearance="bordered" onPress={() => setCurrentScreen("Game")} minWidth="35%" >
+        <button size="small" appearance="bordered" onPress={() => setCurrentScreen("Instructions")} minWidth="35%" >
               Instructions
             </button>
             <button size="small" appearance="bordered" onPress={() => setCurrentScreen("Game") } minWidth="35%">
@@ -199,7 +314,6 @@ export function PixelText(props: PixelTextProps): JSX.Element {
     width = xOffset;
   });
 
-  // Remove the trailing gap
   width -= gap;
 
   const scaledHeight: Devvit.Blocks.SizeString = `${height * size}px`;
