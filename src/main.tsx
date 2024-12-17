@@ -249,7 +249,7 @@ const usernameForm = useForm(
     );
 
     if (isBlackCell) {
-      context.ui.showToast("You can't enter a black cell!");
+      context.ui.showToast("You can't enter a green cell!");
       return prev; 
     }
         if (newPosition.x === 2 && newPosition.y === 2) {
@@ -287,7 +287,7 @@ const usernameForm = useForm(
 
   const isBlack = blackCells.some((cell) => cell.x === col && cell.y === row);
   if (isBlack) {
-    bgcol = "black";
+    bgcol = "green";
   } else if (row === 2 && col === 2) {
     bgcol = "red";
   } else if (row === 0 && col === 0) {
