@@ -18,6 +18,7 @@ Devvit.addCustomPostType({
     const [data, setData] = useState(blankCanvas);
     const [spritePosition, setSpritePosition] = useState({ x: 0, y: 0 });
     const [score, setScore] = useState(0);
+    const [RAnswer, setRAnswer] = useState<string>("");
     
 
     const Questions = [
@@ -33,7 +34,7 @@ Devvit.addCustomPostType({
   { "question": "You find a code on a wall: 'The number of planets in our solar system.'", "answer": "8", "options": ["7", "8", "9", "10"] },
   { "question": "A cryptic clue says: 'I can be cracked, I can be made, I can be told, I can be played. What am I?'", "answer": "A joke", "options": ["A joke", "A puzzle", "A riddle", "A secret"] },
       {"question": "A locked chest requires a 3-digit code. Clue: 'The number of bones in the human body.'", "answer": "206", "options": ["195", "206", "220", "250"] },
-       { "question": "A code says: 'The number of hours in a day minus the number of months in a year.'", "answer": "11", "options": ["9", "11", "10", "12"] },
+       { "question": "A code says: 'The number of hours in a day minus the number of months in a year.'", "answer": "12", "options": ["9", "11", "10", "12"] },
   { "question": "A puzzle reads: 'What is full of holes but still holds a lot of weight?'", "answer": "A net", "options": ["A sponge", "A net", "A basket", "A sieve"] },
       
     ];
@@ -66,7 +67,7 @@ const [randomQuestion, setRandomQuestion] = useState(getRandomQuestion());
   (values) => {
     const userAnswer = Array.isArray(values.answer) ? values.answer[0] : values.answer ?? "";
 
-    if (userAnswer === randomQuestion.answer) { 
+    if (userAnswer === RAnswer) { 
       setScore((score)=>score+10)
       //setQuestionMode(false);
       context.ui.showToast("Correct! You can now move.");
@@ -97,9 +98,10 @@ const [randomQuestion, setRandomQuestion] = useState(getRandomQuestion());
             break;
         }
 
-        setRandomQuestion(getRandomQuestion()); // Update question after each move
-    context.ui.showForm(questionForm);
-        context.ui.showForm(questionForm);
+        setRandomQuestion(getRandomQuestion()); 
+        setRAnswer(randomQuestion.answer);
+        context.ui.showToast(randomQuestion.question)// Update question after each move
+    context.ui.showForm(questionForm);  
         return { x, y };
       });
     };
