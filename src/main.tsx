@@ -391,7 +391,7 @@ const usernameForm = useForm(
       }}
       minWidth="35%"
     >
-      {loadingLeaderboard ? "Loading..." : "View Leaderboard"}
+      View Leaderboard
     </button>
       </vstack>
     );
