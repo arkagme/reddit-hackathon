@@ -19,56 +19,57 @@ Devvit.addCustomPostType({
     const [data, setData] = useState(blankCanvas);
     const [spritePosition, setSpritePosition] = useState({ x: 0, y: 0 });
     const [score, setScore] = useState(0);
-    const [isQuestionMode, setQuestionMode] = useState(false);
+    
+
+    const Questions = [
+      { "question": "You have a locked box with a 3-digit code. The clue says: 'The number of sides in a triangle.'", "answer": "3", "options": ["2", "3", "4", "5"] },
+  { "question": "A locked door requires a 4-letter word. Clue: 'The color of the sky on a clear day.'", "answer": "Blue", "options": ["Red", "Blue", "Green", "Yellow"] },
+  { "question": "To open the chest, the clue says: 'The square of 5.'", "answer": "25", "options": ["15", "25", "35", "45"] },
+  { "question": "The clue on the wall reads: 'The number of continents on Earth.'", "answer": "7", "options": ["5", "6", "7", "8"] },
+  { "question": "A hidden message is revealed when you rearrange the letters in: 'ELPH'. What word do you get?", "answer": "HELP", "options": ["HELP", "LEAP", "PEAL", "PHLA"] },
+  { "question": "To unlock the drawer, the clue says: 'The capital city of Japan.'", "answer": "Tokyo", "options": ["Osaka", "Kyoto", "Tokyo", "Hokkaido"] },
+  { "question": "You find a map with a grid. The clue says: 'The point where the X marks the spot is 4 rows down and 6 columns across.'", "answer": "The coordinates (4,6)", "options": ["(4,5)", "(4,6)", "(3,7)", "(5,5)"] },
+  { "question": "The riddle on the wall reads: 'I am always hungry, I must always be fed. The finger I touch, will soon turn red.' What am I?", "answer": "Fire", "options": ["Water", "Fire", "Air", "Earth"] },
+      { "question": "To unlock the secret compartment, the clue says: 'The number of players in a football team.'", "answer": "11", "options": ["9", "10", "11", "12"] },
+  { "question": "You find a code on a wall: 'The number of planets in our solar system.'", "answer": "8", "options": ["7", "8", "9", "10"] },
+  { "question": "A cryptic clue says: 'I can be cracked, I can be made, I can be told, I can be played. What am I?'", "answer": "A joke", "options": ["A joke", "A puzzle", "A riddle", "A secret"] },
+      {"question": "A locked chest requires a 3-digit code. Clue: 'The number of bones in the human body.'", "answer": "206", "options": ["195", "206", "220", "250"] },
+       { "question": "A code says: 'The number of hours in a day minus the number of months in a year.'", "answer": "11", "options": ["9", "11", "10", "12"] },
+  { "question": "A puzzle reads: 'What is full of holes but still holds a lot of weight?'", "answer": "A net", "options": ["A sponge", "A net", "A basket", "A sieve"] },
+      
+    ];
+    
+
     const [currentQuestion, setCurrentQuestion] = useState<null | { question: string; answer: string; options: string[] }>(null);
-
-    const RedQuestions = [
-      { question: "What is 2 + 2?", answer: "4", options: ['2', '4', '6', '8'] },
-      { question: "What is the capital of France?", answer: "Paris", options: ['Paris', '4', '6', '8'] },
-      { question: "What color is the sky on a clear day?", answer: "Blue", options: ['2', '4', 'Blue', '8']},
-    ];
-
-    const BlueQuestions = [
-      { question: "What is 2 + 2?1", answer: "4", options: ['2', '4', '6', '8'] },
-      { question: "What is the capital of France1?", answer: "Paris", options: ['Paris', '4', '6', '8'] },
-      { question: "What color is the sky on a clear day1?", answer: "Blue", options: ['2', '4', 'Blue', '8']},
-    ];
-
-    const GreenQuestions = [
-      { question: "What is 2 + 2?2", answer: "4", options: ['2', '4', '6', '8'] },
-      { question: "What is the capital of France2?", answer: "Paris", options: ['Paris', '4', '6', '8'] },
-      { question: "What color is the sky on a clear day2?", answer: "Blue", options: ['2', '4', 'Blue', '8']},
-    ];
-
-    const YellowQuestions = [
-      { question: "What is 2 + 2?3", answer: "4", options: ['2', '4', '6', '8'] },
-      { question: "What is the capital of France?3", answer: "Paris", options: ['Paris', '4', '6', '8'] },
-      { question: "What color is the sky on a clear day?3", answer: "Blue", options: ['2', '4', 'Blue', '8']},
-    ];
-
-    const questionForm = useForm(
+    const getRandomQuestion = () => {
+  const randomIndex = Math.floor(Math.random() * Questions.length);
+  return Questions[randomIndex];
+};
+const [randomQuestion, setRandomQuestion] = useState(getRandomQuestion());
+    
+    
+  const questionForm = useForm(
   {
     fields: [
       {
         type: 'select',
         name: 'answer',
-        label: currentQuestion ? currentQuestion.question : "Question",
-       options: currentQuestion 
-          ? currentQuestion.options.map((option) => ({
+        label: randomQuestion.question, 
+        options: randomQuestion.options.map((option) => ({
               label: option,
               value: option,
           }))
-          : [],
+        
       },
     ],
   },
+    
   (values) => {
     const userAnswer = Array.isArray(values.answer) ? values.answer[0] : values.answer ?? "";
 
-    console.log(userAnswer);
-
-    if (currentQuestion && userAnswer === currentQuestion.answer) {
-      setQuestionMode(false);
+    if (userAnswer === randomQuestion.answer) { 
+      setScore((score)=>score+10)
+      //setQuestionMode(false);
       context.ui.showToast("Correct! You can now move.");
     } else {
       context.ui.showToast("Incorrect! Try again.");
@@ -97,93 +98,30 @@ Devvit.addCustomPostType({
             break;
         }
 
-        const backgroundColor = getTileBackgroundColor(x, y);
-        setQuestionBasedOnColor(backgroundColor);
+        setRandomQuestion(getRandomQuestion()); // Update question after each move
+    context.ui.showForm(questionForm);
+        context.ui.showForm(questionForm);
         return { x, y };
       });
     };
 
-    const updateTileColor = (x: number, y: number, color: string) => {
-  const index = y * resolution + x;
-  data[index].backgroundColor = color;
-};
-    const getTileBackgroundColor = (x: number, y: number) => {
-  let backgroundColor = "white";
-  if (x === 2 && y === 2) {
-    backgroundColor = "#FF2400"; 
-  } else if ((x === 2 && (y === 0 || y === 1)) || (y === 2 && (x === 0 || x === 1))) {
-    backgroundColor = "#1773FE";
-  } else if ((x === 1 && y === 0) || (x === 1 && y === 1) || (x === 0 && y === 1)) {
-    backgroundColor = "yellow"; 
-  } else if (x === 0 && y === 0) {
-    backgroundColor = "green"; 
-  }
-  return backgroundColor;
-};
-
-    const setQuestionBasedOnColor = (color: string) => {
-  let selectedQuestion = null;
-      context.ui.showToast(color);
-  switch (color) {
-    case "#FF2400":
-      // Red Question
-      selectedQuestion = RedQuestions[Math.floor(Math.random() * RedQuestions.length)];
-      break;
-    case "#1773FE":
-      // Blue Question
-      selectedQuestion = BlueQuestions[Math.floor(Math.random() * BlueQuestions.length)];
-      break;
-    case "yellow":
-      // Yellow Question
-      selectedQuestion = YellowQuestions[Math.floor(Math.random() * YellowQuestions.length)];
-      break;
-    case "green":
-      // Green Question
-      selectedQuestion = GreenQuestions[Math.floor(Math.random() * GreenQuestions.length)];
-      break;
-  }
-
-  if (selectedQuestion) {
-    setCurrentQuestion(selectedQuestion); // Set the selected question
-    setQuestionMode(true); // Activate question mode
-    context.ui.showForm(questionForm); // Show the form to answer the question
-  }
-};
-
-
     const pixels = data.map((pixel, index) => {
+      let bgcol="white";
       const row = Math.floor(index / resolution);
       const col = index % resolution;
       const isSprite = row === spritePosition.y && col === spritePosition.x;
-      let backgroundColor = "white";
-
-      if (row === 2 && col === 2) {
-        backgroundColor = "#FF2400";
-        if (isSprite) setScore((score) => score + 4);
-      } else if (
-        (row === 2 && (col === 0 || col === 1)) || 
-        (col === 2 && (row === 0 || row === 1))
-      ) {
-        backgroundColor = "#1773FE";
-        if (isSprite) setScore((score) => score + 3);
-      } else if (
-        (row === 1 && col === 0) || 
-        (row === 1 && col === 1) || 
-        (row === 0 && col === 1)
-      ) {
-        backgroundColor = "yellow";
-        if (isSprite) setScore((score) => score + 2);
-      } else if (row === 0 && col === 0) {
-        backgroundColor = "green";
-        if (isSprite) setScore((score) => score + 1);
+      if(row==2 && col==2){
+        bgcol="red"
       }
-
+      else if(row==0 && col==0){
+        bgcol="green"
+      }
 
       return (
         <hstack
           height={`${height}px`}
           width={`${width}px`}
-          backgroundColor={backgroundColor}
+          backgroundColor={bgcol}
           border="thin"
           borderColor="darkgrey"
         >
@@ -202,7 +140,6 @@ Devvit.addCustomPostType({
       );
     });
 
-  
     const splitArray = <T,>(array: T[], segmentLength: number): T[][] => {
       const result: T[][] = [];
       for (let i = 0; i < array.length; i += segmentLength) {
@@ -211,24 +148,34 @@ Devvit.addCustomPostType({
       return result;
     };
 
-    
-
-    
-
     const Canvas = () => (
-      
       <vstack gap="small" width="100%" height="100%" alignment="center middle">
-        <vstack cornerRadius="none" border="thin" height={gridSize} width={gridSize}>
+        <vstack
+          cornerRadius="none"
+          border="thin"
+          height={gridSize}
+          width={gridSize}
+        >
           {splitArray(pixels, resolution).map((row) => (
             <hstack>{row}</hstack>
           ))}
         </vstack>
         <vstack gap="small" alignment="bottom start">
           <hstack gap="small">
-            <button icon="up-arrow-fill" width="70px" grow onPress={() => moveSprite("Up")}>
+            <button
+              icon="up-arrow-fill"
+              width="70px"
+              grow
+              onPress={() => moveSprite("Up")}
+            >
               Up
             </button>
-            <button icon="back-fill" width="78px" grow onPress={() => moveSprite("Left")}>
+            <button
+              icon="back-fill"
+              width="78px"
+              grow
+              onPress={() => moveSprite("Left")}
+            >
               Left
             </button>
             <vstack alignment="middle center" padding="small">
@@ -236,27 +183,71 @@ Devvit.addCustomPostType({
             </vstack>
           </hstack>
           <hstack gap="small">
-            <button icon="down-arrow-fill" width="75px" grow onPress={() => moveSprite("Down")}>
+            <button
+              icon="down-arrow-fill"
+              width="75px"
+              grow
+              onPress={() => moveSprite("Down")}
+            >
               Down
             </button>
-            <button icon="forward-fill" width="75px" grow onPress={() => moveSprite("Right")}>
+            <button
+              icon="forward-fill"
+              width="75px"
+              grow
+              onPress={() => moveSprite("Right")}
+            >
               Right
             </button>
           </hstack>
         </vstack>
       </vstack>
     );
+    const InstructionsScreen = () => (
+  <vstack alignment="center middle" gap="medium" height="100%">
+    <text size="medium" color="#d9c3a0">Welcome to Escape Grid!</text>
+    <text size="small" color="#ffffff">
+       Move the sprite using the directional buttons.</text>
+      <text size="small" color="#ffffff">Answer questions correctly to proceed.</text>
+      <text size="small" color="#ffffff">Reach the goal (red cell) to win the game.
+    </text>
+    <button
+      appearance="primary"
+      onPress={() => setCurrentScreen("Home")}
+      minWidth="35%"
+    >
+      Back to Home
+    </button>
+  </vstack>
+);
 
     const HomeScreen = () => (
-      <vstack gap="medium" alignment="center middle" width="100%" height="100%" backgroundColor="#232054">
-        <PixelText size={3} color="#d9c3a0">ESCAPE GRID</PixelText>
-        <spacer></spacer>
-        <button size="small" appearance="bordered" onPress={() => setCurrentScreen("Instructions")} minWidth="35%" >
-              Instructions
-            </button>
-            <button size="small" appearance="bordered" onPress={() => setCurrentScreen("Game") } minWidth="35%">
-              Start Game
-            </button>
+      <vstack
+        gap="medium"
+        alignment="center middle"
+        width="100%"
+        height="100%"
+        backgroundColor="#232054"
+      >
+        <PixelText size={3} color="#d9c3a0">
+          ESCAPE GRID
+        </PixelText>
+        <button
+          size="small"
+          appearance="bordered"
+          onPress={() => setCurrentScreen("Instructions")}
+          minWidth="35%"
+        >
+          Instructions
+        </button>
+        <button
+          size="small"
+          appearance="bordered"
+          onPress={() => setCurrentScreen("Game")}
+          minWidth="35%"
+        >
+          Start Game
+        </button>
       </vstack>
     );
 
@@ -264,6 +255,7 @@ Devvit.addCustomPostType({
       <blocks>
         {currentScreen === "Home" && <HomeScreen />}
         {currentScreen === "Game" && <Canvas />}
+        {currentScreen === "Instructions" && <InstructionsScreen />}
       </blocks>
     );
   },
@@ -271,6 +263,7 @@ Devvit.addCustomPostType({
 
 
 
+<<<<<<< HEAD
 Devvit.addMenuItem({
   label: 'Add my post',
   location: 'subreddit',
@@ -292,6 +285,9 @@ Devvit.addMenuItem({
     ui.navigateTo(post);
   },
 });
+=======
+
+>>>>>>> 93f42229b758974aa895fa6ecb5c2c777a6c6e09
 
 type SupportedGlyphs = keyof typeof Glyphs;
 
