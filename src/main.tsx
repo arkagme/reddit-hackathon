@@ -8,7 +8,35 @@ const gridSize = `${resolution * width}px`;
 
 Devvit.configure({
   redditAPI: true,
+  redis : true
 });
+
+
+
+Devvit.addMenuItem({
+  label: 'Add my post',
+  location: 'subreddit',
+  forUserType: 'moderator',
+  onPress: async (_event, context) => {
+    const { reddit, ui } = context;
+    ui.showToast("Submitting your post - upon completion you'll navigate there.");
+
+    const subreddit = await reddit.getCurrentSubreddit();
+    const post = await reddit.submitPost({
+      title: 'My devvit post',
+      subredditName: subreddit.name,
+      // The preview appears while the post loads
+      preview: (
+        <vstack height="100%" width="100%" alignment="middle center">
+          <text size="large">Loading ...</text>
+        </vstack>
+      ),
+    });
+    ui.navigateTo(post);
+  },
+});
+
+
 
 Devvit.addCustomPostType({
   name: "Name",
@@ -19,7 +47,9 @@ Devvit.addCustomPostType({
     const [spritePosition, setSpritePosition] = useState({ x: 0, y: 0 });
     const [score, setScore] = useState(0);
     const [RAnswer, setRAnswer] = useState<string>("");
-    
+    const [topPlayers, setTopPlayers] = useState<{ name: string; score: number }[]>([]);
+    const [username, setUsername] = useState("");
+    const [loadingLeaderboard, setLoadingLeaderboard] = useState(false);
 
     const Questions = [
       { "question": "You have a locked box with a 3-digit code. The clue says: 'The number of sides in a triangle.'", "answer": "3", "options": ["2", "3", "4", "5"] },
@@ -46,6 +76,37 @@ Devvit.addCustomPostType({
   return Questions[randomIndex];
 };
 const [randomQuestion, setRandomQuestion] = useState(getRandomQuestion());
+
+
+    const resetGame = () => {
+      setSpritePosition({ x: 0, y: 0 });
+      setScore(0);
+      setCurrentScreen("Home");
+    };
+
+const usernameForm = useForm(
+      {
+        fields: [
+          {
+            type: 'string',
+            name: 'username',
+            label: 'Enter Your Username',
+            validation: {
+              required: true,
+              minLength: 2,
+              maxLength: 20
+            }
+          }
+        ]
+      },
+      (values) => {
+        const submittedUsername = values.username;
+        if (submittedUsername) {
+          setUsername(submittedUsername);
+          submitScore(submittedUsername);
+        }
+      }
+    );
     
     
   const questionForm = useForm(
@@ -69,13 +130,63 @@ const [randomQuestion, setRandomQuestion] = useState(getRandomQuestion());
 
     if (userAnswer === RAnswer) { 
       setScore((score)=>score+10)
-      //setQuestionMode(false);
       context.ui.showToast("Correct! You can now move.");
     } else {
       context.ui.showToast("Incorrect! Try again.");
     }
   }
 );
+
+
+
+    const simpleReadWriteExample = async () => {
+      try {
+         await context.redis.set('score', `${score}`);
+      } catch (error) {
+        console.error('Error interacting with Redis:', error);
+      }
+    };
+
+    const storeScore = async (username: string, score: number) => {
+      const currentLeaderboardKey = "Leaderboard";
+      try {
+        const leaderboard = await context.redis.get(currentLeaderboardKey);
+        const players: { name: string; score: number }[] = leaderboard ? JSON.parse(leaderboard) : [];
+        players.push({ name: username, score });
+        players.sort((a, b) => b.score - a.score);  
+        await context.redis.set(currentLeaderboardKey, JSON.stringify(players));
+        setTopPlayers(players.slice(0, 5));
+      } catch (error) {
+        context.ui.showToast('Error storing score:');
+      }
+    };
+    
+    const getTopPlayers = async () => {
+      setLoadingLeaderboard(true);
+      try {
+        const leaderboard = await context.redis.get("Leaderboard");
+        const players = leaderboard ? JSON.parse(leaderboard) : [];
+        setTopPlayers(players.slice(0, 5)); 
+      } catch (error) {
+        context.ui.showToast("Error fetching leaderboard:");
+        setTopPlayers([]); 
+      } finally {
+        setLoadingLeaderboard(false);
+      }
+    };
+
+    
+      const submitScore = async (submittedUsername?: string) => {
+      const usernameToUse = submittedUsername || username;
+      if (usernameToUse && score > 0) {
+        await storeScore(usernameToUse, score);
+        context.ui.showToast("Score submitted!");
+        await context.redis.set('score', `${score}`);
+        setCurrentScreen("Leaderboard");
+      } else {
+        context.ui.showToast("Please enter a username and score before submitting.");
+      }
+    };
 
 
 
@@ -100,8 +211,18 @@ const [randomQuestion, setRandomQuestion] = useState(getRandomQuestion());
 
         setRandomQuestion(getRandomQuestion()); 
         setRAnswer(randomQuestion.answer);
-        context.ui.showToast(randomQuestion.question)// Update question after each move
     context.ui.showForm(questionForm);  
+
+
+        if (x === 2 && y === 2) {
+          context.ui.showToast("Yay!! You have reached the final cube!!");
+          context.ui.showForm(usernameForm);
+        } else {
+          setRandomQuestion(getRandomQuestion()); 
+          setRAnswer(randomQuestion.answer);
+          context.ui.showForm(questionForm);
+        }
+        
         return { x, y };
       });
     };
@@ -150,7 +271,21 @@ const [randomQuestion, setRandomQuestion] = useState(getRandomQuestion());
     };
 
     const Canvas = () => (
-      <vstack gap="small" width="100%" height="100%" alignment="center middle">
+      <vstack gap="small" width="100%" height="100%" alignment="center middle" backgroundColor="#232054">
+        <hstack alignment="top start" gap="medium" width="40%"> 
+          <button
+              size="small"
+              appearance="bordered"
+              onPress={() => {
+                setCurrentScreen("Home");
+                resetGame();
+              }}
+            >
+              Home
+            </button>
+          <text size="large" color="#d9c3a0" alignment="end top">Score: {score}</text>
+        </hstack>
+        
         <vstack
           cornerRadius="none"
           border="thin"
@@ -161,62 +296,64 @@ const [randomQuestion, setRandomQuestion] = useState(getRandomQuestion());
             <hstack>{row}</hstack>
           ))}
         </vstack>
-        <vstack gap="small" alignment="bottom start">
+        <vstack gap="small" alignment="middle center">
           <hstack gap="small">
             <button
-              icon="up-arrow-fill"
-              width="70px"
-              grow
-              onPress={() => moveSprite("Up")}
-            >
-              Up
+          size="small"
+          appearance="bordered"
+          icon="up-arrow-fill"
+          width="70px"
+          grow
+          onPress={() => moveSprite("Up")}>Up
             </button>
-            <button
-              icon="back-fill"
-              width="78px"
-              grow
-              onPress={() => moveSprite("Left")}
-            >
-              Left
-            </button>
-            <vstack alignment="middle center" padding="small">
-              <text size="large">Score: {score}</text>
-            </vstack>
           </hstack>
           <hstack gap="small">
             <button
-              icon="down-arrow-fill"
-              width="75px"
-              grow
-              onPress={() => moveSprite("Down")}
-            >
-              Down
+          size="small"
+          appearance="bordered"
+          icon="back-fill"
+          width="70px"
+          grow
+          onPress={() => moveSprite("Left")}>Left
             </button>
+             <button
+          size="small"
+          appearance="bordered"
+          icon="down-arrow-fill"
+          width="70px"
+          grow
+          onPress={() => moveSprite("Down")}>Down
+            </button>
+            
             <button
-              icon="forward-fill"
-              width="75px"
-              grow
-              onPress={() => moveSprite("Right")}
-            >
-              Right
+          size="small"
+          appearance="bordered"
+          icon="forward-fill"
+          width="70px"
+          grow
+          onPress={() => moveSprite("Right")}>Right
             </button>
+            
           </hstack>
         </vstack>
       </vstack>
     );
     const InstructionsScreen = () => (
-  <vstack alignment="center middle" gap="medium" height="100%">
-    <text size="medium" color="#d9c3a0">Welcome to Escape Grid!</text>
+  <vstack alignment="center middle" gap="medium" height="100%" backgroundColor="#232054">
+    <PixelText size={1.7} color="#d9c3a0">
+          WELCOME TO ESCAPE GRID
+        </PixelText>
     <text size="small" color="#ffffff">
        Move the sprite using the directional buttons.</text>
       <text size="small" color="#ffffff">Answer questions correctly to proceed.</text>
       <text size="small" color="#ffffff">Reach the goal (red cell) to win the game.
     </text>
     <button
-      appearance="primary"
-      onPress={() => setCurrentScreen("Home")}
-      minWidth="35%"
-    >
+          size="small"
+          appearance="bordered"
+          onPress={() => setCurrentScreen("Home")}
+          minWidth="35%"
+        >
       Back to Home
     </button>
   </vstack>
@@ -249,22 +386,70 @@ const [randomQuestion, setRandomQuestion] = useState(getRandomQuestion());
         >
           Start Game
         </button>
+      <button
+      size="small"
+      appearance="bordered"
+      onPress={async () => {
+        await getTopPlayers();
+        setCurrentScreen("Leaderboard");
+      }}
+      minWidth="35%"
+    >
+      View Leaderboard
+    </button>
       </vstack>
     );
+
+
+
+const LeaderboardScreen = () => (
+  <vstack gap="small" alignment="center middle" width="100%" height="100%">
+    <text size="large" color="#d9c3a0">
+      Top 5 Players
+    </text>
+    {loadingLeaderboard ? (
+      <text size="small" color="#ffffff">
+        Loading leaderboard...
+      </text>
+    ) : topPlayers.length === 0 ? (
+      <text size="small" color="#ffffff">
+        No players yet. Play the game first!
+      </text>
+    ) : (
+      <vstack gap="small">
+        {topPlayers.map((player, index) => (
+          <hstack key={`${player.name}-${player.score}`} gap="small" alignment="center middle">
+            <text size="medium" color="#ffffff">
+              {index + 1}. {player.name} - {player.score}
+            </text>
+          </hstack>
+        ))}
+      </vstack>
+    )}
+    <button
+      appearance="primary"
+      onPress={() => {
+        getTopPlayers(); // Explicitly call get top players
+        setCurrentScreen("Home");
+      }}
+      minWidth="35%"
+    >
+      Back to Home
+    </button>
+  </vstack>
+);
+
 
     return (
       <blocks>
         {currentScreen === "Home" && <HomeScreen />}
         {currentScreen === "Game" && <Canvas />}
         {currentScreen === "Instructions" && <InstructionsScreen />}
+        {currentScreen === "Leaderboard" && <LeaderboardScreen />}
       </blocks>
     );
   },
 });
-
-
-
-
 
 type SupportedGlyphs = keyof typeof Glyphs;
 
