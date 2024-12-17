@@ -1,8 +1,8 @@
 import { Devvit, useState, useForm } from "@devvit/public-api";
 
 const resolution = 3;
-const height = 70;
-const width = 70;
+const height = 64;
+const width = 64;
 const blankCanvas = new Array(resolution * resolution).fill(0);
 const gridSize = `${resolution * width}px`;
 
@@ -285,7 +285,7 @@ const usernameForm = useForm(
   } else if (row === 2 && col === 2) {
     bgcol = "red";
   } else if (row === 0 && col === 0) {
-    bgcol = "green";
+    bgcol = "white";
   }
 
   return (
@@ -298,7 +298,7 @@ const usernameForm = useForm(
     >
       {isSprite && (
         <image
-          url="bomb2.png"
+          url="char1.png"
           height="100%"
           width="100%"
           imageWidth={100}
@@ -391,7 +391,7 @@ const usernameForm = useForm(
     const InstructionsScreen = () => (
   <vstack alignment="center middle" gap="medium" height="100%" backgroundColor="#232054">
     <PixelText size={1.7} color="#d9c3a0">
-          WELCOME TO ESCAPE GRID
+          WELCOME TO QUEST GRID
         </PixelText>
     <text size="small" color="#ffffff">
        Move the sprite using the directional buttons.</text>
@@ -418,10 +418,10 @@ const usernameForm = useForm(
         backgroundColor="#232054"
       >
         <PixelText size={3} color="#d9c3a0">
-          ESCAPE GRID
+          QUEST GRID
         </PixelText>
         <button
-          size="small"
+          size="medium"
           appearance="bordered"
           onPress={() => setCurrentScreen("Instructions")}
           minWidth="35%"
@@ -429,7 +429,7 @@ const usernameForm = useForm(
           Instructions
         </button>
         <button
-          size="small"
+          size="medium"
           appearance="bordered"
           onPress={() => setCurrentScreen("Game")}
           minWidth="35%"
@@ -437,7 +437,7 @@ const usernameForm = useForm(
           Start Game
         </button>
       <button
-      size="small"
+      size="medium"
       appearance="bordered"
       onPress={async () => {
         await getTopPlayers();
