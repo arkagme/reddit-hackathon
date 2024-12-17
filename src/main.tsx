@@ -53,22 +53,23 @@ Devvit.addCustomPostType({
     const [blackCells, setBlackCells] = useState<{ x: number; y: number }[]>([]);
 
     const Questions = [
-      { "question": "You have a locked box with a 3-digit code. The clue says: 'The number of sides in a triangle.'", "answer": "3", "options": ["2", "3", "4", "5"] },
-  { "question": "A locked door requires a 4-letter word. Clue: 'The color of the sky on a clear day.'", "answer": "Blue", "options": ["Red", "Blue", "Green", "Yellow"] },
-  { "question": "To open the chest, the clue says: 'The square of 5.'", "answer": "25", "options": ["15", "25", "35", "45"] },
-  { "question": "The clue on the wall reads: 'The number of continents on Earth.'", "answer": "7", "options": ["5", "6", "7", "8"] },
-  { "question": "A hidden message is revealed when you rearrange the letters in: 'ELPH'. What word do you get?", "answer": "HELP", "options": ["HELP", "LEAP", "PEAL", "PHLA"] },
-  { "question": "To unlock the drawer, the clue says: 'The capital city of Japan.'", "answer": "Tokyo", "options": ["Osaka", "Kyoto", "Tokyo", "Hokkaido"] },
-  { "question": "You find a map with a grid. The clue says: 'The point where the X marks the spot is 4 rows down and 6 columns across.'", "answer": "The coordinates (4,6)", "options": ["(4,5)", "(4,6)", "(3,7)", "(5,5)"] },
-  { "question": "The riddle on the wall reads: 'I am always hungry, I must always be fed. The finger I touch, will soon turn red.' What am I?", "answer": "Fire", "options": ["Water", "Fire", "Air", "Earth"] },
-      { "question": "To unlock the secret compartment, the clue says: 'The number of players in a football team.'", "answer": "11", "options": ["9", "10", "11", "12"] },
-  { "question": "You find a code on a wall: 'The number of planets in our solar system.'", "answer": "8", "options": ["7", "8", "9", "10"] },
+      { "question": "The number of sides in a triangle?", "answer": "3", "options": ["2", "3", "4", "5"] },
+  { "question": "The color of the sky on a clear day?", "answer": "Blue", "options": ["Red", "Blue", "Green", "Yellow"] },
+  { "question": "The square of 5?", "answer": "25", "options": ["15", "25", "35", "45"] },
+  { "question": "The number of continents on Earth?", "answer": "7", "options": ["5", "6", "7", "8"] },
+  { "question": "hidden message , when you rearrange the letters in: 'ELPH'. What word do you get?", "answer": "HELP", "options": ["HELP", "LEAP", "PEAL", "PHLA"] },
+  { "question": "The capital city of Japan?", "answer": "Tokyo", "options": ["Osaka", "Kyoto", "Tokyo", "Hokkaido"] },
+  { "question": "The point where the X marks the spot is 4 rows down and 6 columns across?", "answer": "The coordinates (4,6)", "options": ["(4,5)", "(4,6)", "(3,7)", "(5,5)"] },
+  { "question": "'I am always hungry, I must always be fed. The finger I touch, will soon turn red.' What am I?", "answer": "Fire", "options": ["Water", "Fire", "Air", "Earth"] },
+      { "question": "The number of players in a football team?", "answer": "11", "options": ["9", "10", "11", "12"] },
+  { "question": "The number of planets in our solar system?", "answer": "8", "options": ["7", "8", "9", "10"] },
   { "question": "A cryptic clue says: 'I can be cracked, I can be made, I can be told, I can be played. What am I?'", "answer": "A joke", "options": ["A joke", "A puzzle", "A riddle", "A secret"] },
-      {"question": "A locked chest requires a 3-digit code. Clue: 'The number of bones in the human body.'", "answer": "206", "options": ["195", "206", "220", "250"] },
-       { "question": "A code says: 'The number of hours in a day minus the number of months in a year.'", "answer": "12", "options": ["9", "11", "10", "12"] },
-  { "question": "A puzzle reads: 'What is full of holes but still holds a lot of weight?'", "answer": "A net", "options": ["A sponge", "A net", "A basket", "A sieve"] },
+      {"question": "The number of bones in the human body?", "answer": "206", "options": ["195", "206", "220", "250"] },
+       { "question": "The number of hours in a day minus the number of months in a year?", "answer": "12", "options": ["9", "11", "10", "12"] },
+  { "question": "What is full of holes but still holds a lot of weight?", "answer": "A net", "options": ["A sponge", "A net", "A basket", "A sieve"] },
       
     ];
+    
     
 
     const [currentQuestion, setCurrentQuestion] = useState<null | { question: string; answer: string; options: string[] }>(null);
@@ -106,6 +107,9 @@ const [randomQuestion, setRandomQuestion] = useState(getRandomQuestion());
       setSpritePosition({ x: 0, y: 0 });
       setScore(0);
       setCurrentScreen("Home");
+      setBlackCells([]); 
+      setUsedQuestions([]); 
+      setRemainingQuestions(Questions); 
     };
 
 const usernameForm = useForm(
@@ -328,7 +332,7 @@ const usernameForm = useForm(
 
     const Canvas = () => (
       <vstack gap="small" width="100%" height="100%" alignment="center middle" backgroundColor="#232054">
-        <hstack alignment="top start" gap="medium" width="40%"> 
+        <hstack alignment="top start" gap="medium" width="60%"> 
           <button
               size="small"
               appearance="bordered"
@@ -402,7 +406,10 @@ const usernameForm = useForm(
     <text size="small" color="#ffffff">
        Move the sprite using the directional buttons.</text>
       <text size="small" color="#ffffff">Answer questions correctly to proceed.</text>
-      <text size="small" color="#ffffff">Reach the goal (red cell) to win the game.
+      <text size="small" color="#ffffff">Reach the goal (red cell) to win the game.</text>
+      <text size="small" color="#ffffff">More the number of correct answers ,
+    </text>
+    <text size="small" color="#ffffff">more the points !!
     </text>
     <button
           size="small"
