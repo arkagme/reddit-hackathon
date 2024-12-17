@@ -25,7 +25,7 @@ Devvit.addMenuItem({
     const post = await reddit.submitPost({
       title: 'My devvit post',
       subredditName: subreddit.name,
-      // The preview appears while the post loads
+   
       preview: (
         <vstack height="100%" width="100%" alignment="middle center">
           <text size="large">Loading ...</text>
@@ -79,12 +79,12 @@ Devvit.addCustomPostType({
   answer: string;            
 };
     
-    const [usedQuestions, setUsedQuestions] = useState<Question[]>([]); // Track displayed questions
+    const [usedQuestions, setUsedQuestions] = useState<Question[]>([]); 
 const [remainingQuestions, setRemainingQuestions] = useState<Question[]>(Questions);
     
     
 const getRandomQuestion = (): Question => {
-  // Filter out already displayed questions
+  
   const availableQuestions = remainingQuestions.filter(
     (q) => !usedQuestions.includes(q)
   );
@@ -223,8 +223,10 @@ const usernameForm = useForm(
     const moveSprite = (direction: "Up" | "Down" | "Left" | "Right") => {
       setSpritePosition((prev) => {
     let { x, y } = prev;
-
-    // Calculate new position based on direction
+    if (x === 2 && y === 2) {
+      return { x, y }; 
+    }
+   
     const newPosition = { x, y };
     switch (direction) {
       case "Up":
@@ -241,17 +243,21 @@ const usernameForm = useForm(
         break;
     }
 
-    // Check if new position is a black cell
+
     const isBlackCell = blackCells.some(
       (cell) => cell.x === newPosition.x && cell.y === newPosition.y
     );
 
     if (isBlackCell) {
       context.ui.showToast("You can't enter a black cell!");
-      return prev; // Prevent moving into black cells
+      return prev; 
+    }
+        if (newPosition.x === 2 && newPosition.y === 2) {
+      context.ui.showToast("Yay!! You have reached the final cube!!");
+      context.ui.showForm(usernameForm);
+      return newPosition;
     }
 
-    // Show a question form when moving
     setRandomQuestion(getRandomQuestion());
     setRAnswer(randomQuestion.answer);
     context.ui.showForm(questionForm);
@@ -278,7 +284,7 @@ const usernameForm = useForm(
   const col = index % resolution;
   const isSprite = row === spritePosition.y && col === spritePosition.x;
 
-  // Check if the cell is black
+
   const isBlack = blackCells.some((cell) => cell.x === col && cell.y === row);
   if (isBlack) {
     bgcol = "black";
@@ -479,7 +485,7 @@ const LeaderboardScreen = () => (
     <button
       appearance="primary"
       onPress={() => {
-        getTopPlayers(); // Explicitly call get top players
+        getTopPlayers(); 
         setCurrentScreen("Home");
       }}
       minWidth="35%"
