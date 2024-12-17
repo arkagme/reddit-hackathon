@@ -50,6 +50,7 @@ Devvit.addCustomPostType({
     const [topPlayers, setTopPlayers] = useState<{ name: string; score: number }[]>([]);
     const [username, setUsername] = useState("");
     const [loadingLeaderboard, setLoadingLeaderboard] = useState(false);
+    const [blackCells, setBlackCells] = useState<{ x: number; y: number }[]>([]);
 
     const Questions = [
       { "question": "You have a locked box with a 3-digit code. The clue says: 'The number of sides in a triangle.'", "answer": "3", "options": ["2", "3", "4", "5"] },
@@ -71,12 +72,35 @@ Devvit.addCustomPostType({
     
 
     const [currentQuestion, setCurrentQuestion] = useState<null | { question: string; answer: string; options: string[] }>(null);
-    const getRandomQuestion = () => {
-  const randomIndex = Math.floor(Math.random() * Questions.length);
-  return Questions[randomIndex];
-};
-const [randomQuestion, setRandomQuestion] = useState(getRandomQuestion());
 
+    type Question = {
+  question: string;          
+  options: string[];         
+  answer: string;            
+};
+    
+    const [usedQuestions, setUsedQuestions] = useState<Question[]>([]); // Track displayed questions
+const [remainingQuestions, setRemainingQuestions] = useState<Question[]>(Questions);
+    
+    
+const getRandomQuestion = (): Question => {
+  // Filter out already displayed questions
+  const availableQuestions = remainingQuestions.filter(
+    (q) => !usedQuestions.includes(q)
+  );
+
+  if (availableQuestions.length === 0) {
+    context.ui.showToast("No more questions available!");
+    return { question: "No questions left!", options: [], answer: "" }; 
+  }
+
+  const randomIndex = Math.floor(Math.random() * availableQuestions.length);
+  const newQuestion = availableQuestions[randomIndex];
+
+  return newQuestion;
+};
+
+const [randomQuestion, setRandomQuestion] = useState(getRandomQuestion());
 
     const resetGame = () => {
       setSpritePosition({ x: 0, y: 0 });
@@ -131,9 +155,15 @@ const usernameForm = useForm(
     if (userAnswer === RAnswer) { 
       setScore((score)=>score+10)
       context.ui.showToast("Correct! You can now move.");
+      setBlackCells((prev) => [...prev, { x: spritePosition.x, y: spritePosition.y }]);
     } else {
       context.ui.showToast("Incorrect! Try again.");
+    
     }
+    setUsedQuestions((prev) => [...prev, randomQuestion]);
+    setRemainingQuestions((prev) =>
+      prev.filter((q) => q.question !== randomQuestion.question)
+    );
   }
 );
 
@@ -192,26 +222,41 @@ const usernameForm = useForm(
 
     const moveSprite = (direction: "Up" | "Down" | "Left" | "Right") => {
       setSpritePosition((prev) => {
-        let { x, y } = prev;
+    let { x, y } = prev;
 
-        switch (direction) {
-          case "Up":
-            y = Math.max(0, y - 1);
-            break;
-          case "Down":
-            y = Math.min(resolution - 1, y + 1);
-            break;
-          case "Left":
-            x = Math.max(0, x - 1);
-            break;
-          case "Right":
-            x = Math.min(resolution - 1, x + 1);
-            break;
-        }
+    // Calculate new position based on direction
+    const newPosition = { x, y };
+    switch (direction) {
+      case "Up":
+        newPosition.y = Math.max(0, y - 1);
+        break;
+      case "Down":
+        newPosition.y = Math.min(resolution - 1, y + 1);
+        break;
+      case "Left":
+        newPosition.x = Math.max(0, x - 1);
+        break;
+      case "Right":
+        newPosition.x = Math.min(resolution - 1, x + 1);
+        break;
+    }
 
-        setRandomQuestion(getRandomQuestion()); 
-        setRAnswer(randomQuestion.answer);
-    context.ui.showForm(questionForm);  
+    // Check if new position is a black cell
+    const isBlackCell = blackCells.some(
+      (cell) => cell.x === newPosition.x && cell.y === newPosition.y
+    );
+
+    if (isBlackCell) {
+      context.ui.showToast("You can't enter a black cell!");
+      return prev; // Prevent moving into black cells
+    }
+
+    // Show a question form when moving
+    setRandomQuestion(getRandomQuestion());
+    setRAnswer(randomQuestion.answer);
+    context.ui.showForm(questionForm);
+
+     
 
 
         if (x === 2 && y === 2) {
@@ -223,44 +268,49 @@ const usernameForm = useForm(
           context.ui.showForm(questionForm);
         }
         
-        return { x, y };
+        return newPosition;
       });
     };
 
     const pixels = data.map((pixel, index) => {
-      let bgcol="white";
-      const row = Math.floor(index / resolution);
-      const col = index % resolution;
-      const isSprite = row === spritePosition.y && col === spritePosition.x;
-      if(row==2 && col==2){
-        bgcol="red"
-      }
-      else if(row==0 && col==0){
-        bgcol="green"
-      }
+  let bgcol = "white";
+  const row = Math.floor(index / resolution);
+  const col = index % resolution;
+  const isSprite = row === spritePosition.y && col === spritePosition.x;
 
-      return (
-        <hstack
-          height={`${height}px`}
-          width={`${width}px`}
-          backgroundColor={bgcol}
-          border="thin"
-          borderColor="darkgrey"
-        >
-          {isSprite && (
-            <image
-              url="bomb2.png"
-              height="100%"
-              width="100%"
-              imageWidth={100}
-              imageHeight={100}
-              resizeMode="fit"
-              description="Sprite Icon"
-            />
-          )}
-        </hstack>
-      );
-    });
+  // Check if the cell is black
+  const isBlack = blackCells.some((cell) => cell.x === col && cell.y === row);
+  if (isBlack) {
+    bgcol = "black";
+  } else if (row === 2 && col === 2) {
+    bgcol = "red";
+  } else if (row === 0 && col === 0) {
+    bgcol = "green";
+  }
+
+  return (
+    <hstack
+      height={`${height}px`}
+      width={`${width}px`}
+      backgroundColor={bgcol}
+      border="thin"
+      borderColor="darkgrey"
+    >
+      {isSprite && (
+        <image
+          url="bomb2.png"
+          height="100%"
+          width="100%"
+          imageWidth={100}
+          imageHeight={100}
+          resizeMode="fit"
+          description="Sprite Icon"
+        />
+      )}
+    </hstack>
+  );
+});
+
 
     const splitArray = <T,>(array: T[], segmentLength: number): T[][] => {
       const result: T[][] = [];
