@@ -50,5 +50,5 @@ The grid is a dynamic puzzle: each block can be solved only once. As you answer 
    - Harder levels could lead to higher rewards for correct answers and a more challenging game experience.
 
 ## App Listing
-[QuestGrid App Listing]{https://developers.reddit.com/apps/questgrid-1}
+[QuestGrid App Listing](https://developers.reddit.com/apps/questgrid-1)
 
