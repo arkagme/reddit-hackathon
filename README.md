@@ -1,12 +1,12 @@
-# QuestGrid - Reddit Games and Puzzles Hackathon
+# Anvesham - Reddit Games and Puzzles Hackathon
 
 ## Introduction
 
-Welcome to **QuestGrid**, an exciting interactive puzzle game where you navigate through a grid by answering questions! Your objective is to move through the grid, solve puzzles, and reach the final red cell while accumulating points. With every correct answer, you progress and increase your score, making your way up the leaderboard. Once a grid block is solved, it can't be revisited. Only one path leads to victory!
+Welcome to **Anvesham**, an exciting interactive puzzle game where you navigate through a grid by answering questions! Your objective is to move through the grid, solve puzzles, and reach the final red cell while accumulating points. With every correct answer, you progress and increase your score, making your way up the leaderboard. Once a grid block is solved, it can't be revisited. Only one path leads to victory!
 
 ## What the Game Does
 
-**QuestGrid** challenges players to move across a grid by answering a series of questions. As you progress, you will solve different questions, earn points, and aim for the final red point at (2, 2). The game rewards players based on the number of questions they've answered correctly. Your performance is measured by how quickly and accurately you solve questions, which directly influences your score and position on the leaderboard.
+**Anvesham** challenges players to move across a grid by answering a series of questions. As you progress, you will solve different questions, earn points, and aim for the final red point at (2, 2). The game rewards players based on the number of questions they've answered correctly. Your performance is measured by how quickly and accurately you solve questions, which directly influences your score and position on the leaderboard.
 
 The grid is a dynamic puzzle: each block can be solved only once. As you answer correctly, the block turns solved, and you can’t revisit it. The game ends when you reach the final red cell. How many questions can you solve before you hit the end?
 
@@ -50,5 +50,5 @@ The grid is a dynamic puzzle: each block can be solved only once. As you answer 
    - Harder levels could lead to higher rewards for correct answers and a more challenging game experience.
 
 ## App Listing
-[QuestGrid App Listing](https://developers.reddit.com/apps/questgrid-1)
+[QuestGrid App Listing](https://developers.reddit.com/apps/finaltest1-app-1)
 
