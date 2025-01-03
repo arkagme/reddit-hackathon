@@ -401,7 +401,7 @@ const usernameForm = useForm(
     const InstructionsScreen = () => (
   <vstack alignment="center middle" gap="medium" height="100%" backgroundColor="#232054">
     <PixelText size={1.7} color="#d9c3a0">
-          WELCOME TO QUEST GRID
+          WELCOME TO ANVESHAM
         </PixelText>
     <text size="small" color="#ffffff">
        Move the sprite using the directional buttons.</text>
@@ -431,7 +431,7 @@ const usernameForm = useForm(
         backgroundColor="#232054"
       >
         <PixelText size={3} color="#d9c3a0">
-          QUEST GRID
+          ANVESHAM
         </PixelText>
         <button
           size="medium"
